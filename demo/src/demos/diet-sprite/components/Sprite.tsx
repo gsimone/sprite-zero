@@ -1,9 +1,9 @@
-import { Edges, Plane, Text } from "@react-three/drei";
-import { folder, useControls } from "leva";
 import { useLayoutEffect, useRef, useState } from "react";
 import { BufferGeometry } from "three";
-import { DebugBackground } from "./DebugBackground";
-import { DebugText } from "./DebugText";
+import { BillboardMaterial } from "../materials/BillboardMaterial";
+import { UVMaterial } from "../materials/UVMaterial";
+import { DebugBackground } from "./internal/DebugBackground";
+import { DebugText } from "./internal/DebugText";
 
 export function MySprite({
   map,
@@ -49,12 +49,7 @@ export function MySprite({
             [horizontalIndex, verticalIndex],
           ]}
         />
-        <myBillboardMaterial
-          map={map}
-          transparent
-          alphaTest={threshold}
-          alphaMap={map}
-        />
+        <BillboardMaterial map={map} transparent />
       </mesh>
 
       <mesh visible={debug}>
@@ -67,7 +62,7 @@ export function MySprite({
             [horizontalIndex, verticalIndex],
           ]}
         />
-        <myUVsMaterial depthTest={false} wireframe transparent />
+        <UVMaterial depthTest={false} wireframe transparent />
       </mesh>
     </group>
   );

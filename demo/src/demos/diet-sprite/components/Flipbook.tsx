@@ -1,12 +1,10 @@
-import { Billboard, Plane, Text } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 
 import { createClippedFlipbook } from "diet-sprite";
-import { materialKey } from "../materials";
-import { useFrame } from "@react-three/fiber";
-import { Texture } from "three";
-import { DebugBackground } from "./DebugBackground";
-import { DebugText } from "./DebugText";
+import { MeshBasicMaterial, Texture } from "three";
+import { DebugBackground } from "./internal/DebugBackground";
+import { DebugText } from "./internal/DebugText";
+import { MyMaterial } from "../materials/MyMaterial";
 
 type MyFlipbookProps = {
   map: Texture;
@@ -28,8 +26,8 @@ export function MyFlipbook({
   threshold,
   ...props
 }: MyFlipbookProps) {
-  const $mat = useRef();
-  const $mat2 = useRef();
+  const $mat = useRef<MeshBasicMaterial>(null!);
+  const $mat2 = useRef<MeshBasicMaterial>(null!);
 
   const [geometry, dataTexture, _, savings] = useMemo(() => {
     return createClippedFlipbook(map.image, vertices, threshold, [
@@ -37,18 +35,6 @@ export function MyFlipbook({
       verticalSlices,
     ]);
   }, [map.image, vertices, horizontalSlices, verticalSlices, threshold]);
-
-  /**
-   * Animates the u_index uniform to go through the flipbook
-   */
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if ($mat.current && $mat2.current) {
-      $mat.current.uniforms.u_index.value =
-        $mat2.current.uniforms.u_index.value =
-          Math.floor(t * fps) % (horizontalSlices * verticalSlices);
-    }
-  });
 
   return (
     <group {...props} scale={6}>
@@ -71,30 +57,26 @@ export function MyFlipbook({
         renderOrder={1}
         visible={debug}
         geometry={geometry}
-        position-z={0.1}
       >
-        <myMaterial
-          depthRead={false}
-          key={materialKey}
-          ref={$mat}
-          u_data={dataTexture}
-          u_debugUv={1}
-          u_map={map}
-          u_slices={[horizontalSlices, verticalSlices]}
-          u_vertices={vertices}
+        <MyMaterial
+          debug
           wireframe
+          ref={$mat}
+          flipbookMap={map}
+          dataTexture={dataTexture}
+          size={[horizontalSlices, verticalSlices]}
+          vertices={vertices}
         />
       </mesh>
 
       <mesh geometry={geometry}>
-        <myMaterial
-          key={materialKey}
-          ref={$mat2}
+        <MyMaterial
           transparent
-          u_data={dataTexture}
-          u_map={map}
-          u_slices={[horizontalSlices, verticalSlices]}
-          u_vertices={vertices}
+          ref={$mat2}
+          flipbookMap={map}
+          dataTexture={dataTexture}
+          size={[horizontalSlices, verticalSlices]}
+          vertices={vertices}
         />
       </mesh>
     </group>
